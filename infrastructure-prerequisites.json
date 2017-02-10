@@ -460,7 +460,7 @@
 				"ToPort" : "65535",
 				"SourceSecurityGroupId" : { "Ref" : "PrivateAgentSecurityGroup" },
 				"GroupId" : { "Ref" : "PrivateAgentSecurityGroup" }
-			},
+			}
 		},
 
 		"PrivateAgentToPublicAgentIngress" : {
@@ -561,8 +561,6 @@
 				"GroupId" : { "Ref" : "LbSecurityGroup" }
 			}
 		},
-
-		// here down
 
 		"PublicAgentIngressOne" : {
 			"Type" : "AWS::EC2::SecurityGroupIngress",
