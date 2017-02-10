@@ -15,12 +15,22 @@
 			"ConstraintDescription" : "must be a valid IP CIDR range of the form x.x.x.x/x."
     	},
 
+    	"PrivateSubnetCidr" : {
+			"Description" : "The CIDR block for the private subnet",
+			"Type" : "String",
+			"MinLength" : "9",
+			"MaxLength" : "18",
+			"Default" : "10.0.0.0/17",
+			"AllowedPattern" : "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+			"ConstraintDescription" : "must be a valid IP CIDR range of the form x.x.x.x/x."
+    	},
+
     	"PublicSubnetCidr" : {
 			"Description" : "The CIDR block for the public subnet",
 			"Type" : "String",
 			"MinLength" : "9",
 			"MaxLength" : "18",
-			"Default" : "10.0.0.0/24",
+			"Default" : "10.0.128.0/20",
 			"AllowedPattern" : "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
 			"ConstraintDescription" : "must be a valid IP CIDR range of the form x.x.x.x/x."
     	}
@@ -67,7 +77,10 @@
 			"Properties" : {
 				"CidrBlock" : { "Ref" : "PublicSubnetCidr" },
 				"VpcId" : { "Ref" : "MyVPC" },
-				"Tags" : [ { "Key" : "StackId", "Value" : { "Ref" : "AWS::StackId" } } ]
+				"Tags" : [ 
+					{ "Key" : "StackId", "Value" : { "Ref" : "AWS::StackId" } },
+					{ "Key" : "Name", "Value" : "DCOS-PublicSubnet" }
+				]
 			}
 		},
 
@@ -93,6 +106,18 @@
 			"Properties" : {
 				"RouteTableId" : { "Ref" : "PublicRouteTable" },
 				"SubnetId" : { "Ref" : "PublicSubnet" }
+			}
+		},
+
+		"PrivateSubnet" : {
+			"Type" : "AWS::EC2::Subnet",
+			"Properties" : {
+				"CidrBlock" : { "Ref" : "PrivateSubnetCidr" },
+				"VpcId" : { "Ref" : "MyVPC" },
+				"Tags" : [ 
+					{ "Key" : "StackId", "Value" : { "Ref" : "AWS::StackId" } },
+					{ "Key" : "Name", "Value" : "DCOS-PrivateSubnet" }
+				]
 			}
 		},
 
