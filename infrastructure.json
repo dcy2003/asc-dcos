@@ -90,7 +90,11 @@
 	},
 
 	"Conditions" : {
-		"CreatePrerequisites" : { "Fn::Not" : [ { "Ref" : "Environment" } , "c2s"] }
+		"CreatePrerequisites" : {
+			"Fn::Not": [{
+				"Fn::Equals" : [ { "Ref" : "Environment" } , "c2s" ]
+			}] 
+		}
 	},
 
 	"Mappings" : {
