@@ -385,7 +385,7 @@
 							{ "Ref" : "MasterSecurityGroup" },
 							{ "Ref" : "AdminSecurityGroup" }
 						],
-						"SubnetId" : { "Fn:If" : [
+						"SubnetId" : { "Fn::If" : [
 								"CreatePrerequisites",
 								{ "Ref" : "PublicSubnet" },
 								{ "Ref" : "PublicSubnetId" }
@@ -404,7 +404,7 @@
 			"Type" : "AWS::EC2::SecurityGroup",
 			"Properties" : {
 				"GroupDescription" : "Mesos Private Agents",
-				"VpcId" : { "Fn:If" : [
+				"VpcId" : { "Fn::If" : [
 						"CreatePrerequisites",
 						{ "Ref" : "VPC" },
 						{ "Ref" : "VpcId" }
@@ -418,7 +418,7 @@
 			"Type" : "AWS::EC2::SecurityGroup",
 			"Properties" : {
 				"GroupDescription" : "Mesos Master LB",
-				"VpcId" : { "Fn:If" : [
+				"VpcId" : { "Fn::If" : [
 						"CreatePrerequisites",
 						{ "Ref" : "VPC" },
 						{ "Ref" : "VpcId" }
@@ -432,7 +432,7 @@
 			"Type" : "AWS::EC2::SecurityGroup",
 			"Properties" : {
 				"GroupDescription" : "Mesos Public Agents",
-				"VpcId" : { "Fn:If" : [
+				"VpcId" : { "Fn::If" : [
 						"CreatePrerequisites",
 						{ "Ref" : "VPC" },
 						{ "Ref" : "VpcId" }
@@ -446,7 +446,7 @@
 			"Type" : "AWS::EC2::SecurityGroup",
 			"Properties" : {
 				"GroupDescription" : "Mesos Masters",
-				"VpcId" : { "Fn:If" : [
+				"VpcId" : { "Fn::If" : [
 						"CreatePrerequisites",
 						{ "Ref" : "VPC" },
 						{ "Ref" : "VpcId" }
@@ -498,7 +498,7 @@
 			"Type" : "AWS::EC2::SecurityGroup",
 			"Properties" : {
 				"GroupDescription" : "Enable admin access to servers",
-				"VpcId" : { "Fn:If" : [
+				"VpcId" : { "Fn::If" : [
 						"CreatePrerequisites",
 						{ "Ref" : "VPC" },
 						{ "Ref" : "VpcId" }
