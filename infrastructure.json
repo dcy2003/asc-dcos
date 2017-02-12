@@ -23,9 +23,9 @@
     	},
 
     	"VpcId" : {
-    		"Description" : "ID of pre-existing VPC to re-use (if applicable)",
-    		"Type" : "AWS::EC2::VPC::Id",
-    		"Default" : "AWS::NoValue"
+    		"Description" : "[optional] ID of pre-existing VPC to re-use (C2S)",
+    		"Type" : "String",
+    		"Default" : ""
     	},
 
     	"PrivateSubnetCidr" : {
@@ -49,9 +49,9 @@
     	},
 
     	"PublicSubnetId" : {
-    		"Description" : "ID of pre-existing public subnet to re-use (if applicable)",
-    		"Type" : "AWS::EC2::Subnet::Id",
-    		"Default" : "AWS::NoValue"
+    		"Description" : "[optional] ID of pre-existing public subnet to re-use (C2S)",
+    		"Type" : "String",
+    		"Default" : ""
     	},
 
     	"NATInstanceType" : {
