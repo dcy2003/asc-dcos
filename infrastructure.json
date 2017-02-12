@@ -381,7 +381,12 @@
 							{ "Ref" : "MasterSecurityGroup" },
 							{ "Ref" : "AdminSecurityGroup" }
 						],
-						"SubnetId" : { "Ref" : "PublicSubnet" }
+						"SubnetId" : { "Fn:If" : [
+								"CreatePrerequisites",
+								{ "Ref" : "PublicSubnet" },
+								{ "Ref" : "PublicSubnetId" }
+							] 
+						}
 					}
 				],
 				"Tags" : [ 
@@ -395,7 +400,12 @@
 			"Type" : "AWS::EC2::SecurityGroup",
 			"Properties" : {
 				"GroupDescription" : "Mesos Private Agents",
-				"VpcId" : { "Ref" : "MyVPC" },
+				"VpcId" : { "Fn:If" : [
+						"CreatePrerequisites",
+						{ "Ref" : "MyVPC" },
+						{ "Ref" : "VpcId" }
+					] 
+				},
 				"Tags" : [ { "Key" : "StackId", "Value" : { "Ref" : "AWS::StackId" } } ]
 			}
 		},
@@ -404,7 +414,12 @@
 			"Type" : "AWS::EC2::SecurityGroup",
 			"Properties" : {
 				"GroupDescription" : "Mesos Master LB",
-				"VpcId" : { "Ref" : "MyVPC" },
+				"VpcId" : { "Fn:If" : [
+						"CreatePrerequisites",
+						{ "Ref" : "MyVPC" },
+						{ "Ref" : "VpcId" }
+					] 
+				},
 				"Tags" : [ { "Key" : "StackId", "Value" : { "Ref" : "AWS::StackId" } } ]
 			}
 		},
@@ -413,7 +428,12 @@
 			"Type" : "AWS::EC2::SecurityGroup",
 			"Properties" : {
 				"GroupDescription" : "Mesos Public Agents",
-				"VpcId" : { "Ref" : "MyVPC" },
+				"VpcId" : { "Fn:If" : [
+						"CreatePrerequisites",
+						{ "Ref" : "MyVPC" },
+						{ "Ref" : "VpcId" }
+					] 
+				},
 				"Tags" : [ { "Key" : "StackId", "Value" : { "Ref" : "AWS::StackId" } } ]
 			}
 		},
@@ -422,7 +442,12 @@
 			"Type" : "AWS::EC2::SecurityGroup",
 			"Properties" : {
 				"GroupDescription" : "Mesos Masters",
-				"VpcId" : { "Ref" : "MyVPC" },
+				"VpcId" : { "Fn:If" : [
+						"CreatePrerequisites",
+						{ "Ref" : "MyVPC" },
+						{ "Ref" : "VpcId" }
+					] 
+				},
 				"Tags" : [ { "Key" : "StackId", "Value" : { "Ref" : "AWS::StackId" } } ],
 				"SecurityGroupIngress" : [
 					{
@@ -469,7 +494,12 @@
 			"Type" : "AWS::EC2::SecurityGroup",
 			"Properties" : {
 				"GroupDescription" : "Enable admin access to servers",
-				"VpcId" : { "Ref" : "MyVPC" },
+				"VpcId" : { "Fn:If" : [
+						"CreatePrerequisites",
+						{ "Ref" : "MyVPC" },
+						{ "Ref" : "VpcId" }
+					] 
+				},
 				"Tags" : [ { "Key" : "StackId", "Value" : { "Ref" : "AWS::StackId" } } ],
 				"SecurityGroupIngress" : [
 					{
