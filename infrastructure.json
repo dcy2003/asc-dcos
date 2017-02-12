@@ -1,7 +1,7 @@
 {
 	"AWSTemplateFormatVersion" : "2010-09-09",
 
-	"Description" : "TODO fill me in ...",
+	"Description" : "Provisions resources necessary to install DC/OS",
 
 	"Parameters" : {
 
@@ -187,7 +187,8 @@
 				"Tags" : [ 
 					{ "Key" : "StackId", "Value" : { "Ref" : "AWS::StackId" } },
 					{ "Key" : "Application", "Value" : { "Ref" : "AWS::StackName" } },
-					{ "Key" : "Network", "Value" : "Public" }
+					{ "Key" : "Network", "Value" : "Public" },
+					{ "Key" : "Name", "Value" : { "Fn::Join" : [ "", [{ "Ref" : "AWS::StackName" }, "-public"]]} }
 				]
 			}
 		},
@@ -232,7 +233,8 @@
 				"Tags" : [ 
 					{ "Key" : "StackId", "Value" : { "Ref" : "AWS::StackId" } },
 					{ "Key" : "Application", "Value" : { "Ref" : "AWS::StackName" } },
-					{ "Key" : "Network", "Value" : "Private" }
+					{ "Key" : "Network", "Value" : "Private" },
+					{ "Key" : "Name", "Value" : { "Fn::Join" : [ "", [{ "Ref" : "AWS::StackName" }, "-private"]]} }
 				]
 			}
 		},
@@ -264,7 +266,8 @@
 				"Tags" : [ 
 					{ "Key" : "StackId", "Value" : { "Ref" : "AWS::StackId" } },
 					{ "Key" : "Application", "Value" : { "Ref" : "AWS::StackName" } },
-					{ "Key" : "Network", "Value" : "Public" }
+					{ "Key" : "Network", "Value" : "Public" },
+					{ "Key" : "Name", "Value" : { "Fn::Join" : [ "", [{ "Ref" : "AWS::StackName" }, "-public"]]} }
 				]
 			}
 		},
@@ -320,7 +323,8 @@
 				"Tags" : [ 
 					{ "Key" : "StackId", "Value" : { "Ref" : "AWS::StackId" } },
 					{ "Key" : "Application", "Value" : { "Ref" : "AWS::StackName" } },
-					{ "Key" : "Network", "Value" : "Private" }
+					{ "Key" : "Network", "Value" : "Private" },
+					{ "Key" : "Name", "Value" : { "Fn::Join" : [ "", [{ "Ref" : "AWS::StackName" }, "-private"]]} }
 				]
 			}
 		},
@@ -395,7 +399,8 @@
 				],
 				"Tags" : [ 
 					{ "Key" : "StackId", "Value" : { "Ref" : "AWS::StackId" } }, 
-					{ "Key" : "role", "Value" : "NATInstance" } 
+					{ "Key" : "role", "Value" : "NATInstance" },
+					{ "Key" : "Name", "Value" : "NATInstance" }
 				]
 			}
 		},
@@ -410,7 +415,10 @@
 						{ "Ref" : "VpcId" }
 					] 
 				},
-				"Tags" : [ { "Key" : "StackId", "Value" : { "Ref" : "AWS::StackId" } } ]
+				"Tags" : [
+					{ "Key" : "StackId", "Value" : { "Ref" : "AWS::StackId" } },
+					{ "Key" : "Name", "Value" : "PrivateAgentSecurityGroup" }
+				]
 			}
 		},
 
@@ -424,7 +432,10 @@
 						{ "Ref" : "VpcId" }
 					] 
 				},
-				"Tags" : [ { "Key" : "StackId", "Value" : { "Ref" : "AWS::StackId" } } ]
+				"Tags" : [
+					{ "Key" : "StackId", "Value" : { "Ref" : "AWS::StackId" } },
+					{ "Key" : "Name", "Value" : "LbSecurityGroup" }
+				]
 			}
 		},
 
@@ -438,7 +449,10 @@
 						{ "Ref" : "VpcId" }
 					] 
 				},
-				"Tags" : [ { "Key" : "StackId", "Value" : { "Ref" : "AWS::StackId" } } ]
+				"Tags" : [
+					{ "Key" : "StackId", "Value" : { "Ref" : "AWS::StackId" } },
+					{ "Key" : "Name", "Value" : "PublicAgentSecurityGroup" }
+				]
 			}
 		},
 
@@ -452,7 +466,10 @@
 						{ "Ref" : "VpcId" }
 					] 
 				},
-				"Tags" : [ { "Key" : "StackId", "Value" : { "Ref" : "AWS::StackId" } } ],
+				"Tags" : [
+					{ "Key" : "StackId", "Value" : { "Ref" : "AWS::StackId" } },
+					{ "Key" : "Name", "Value" : "MasterSecurityGroup" }
+				],
 				"SecurityGroupIngress" : [
 					{
 						"IpProtocol" : "tcp",
@@ -504,7 +521,10 @@
 						{ "Ref" : "VpcId" }
 					] 
 				},
-				"Tags" : [ { "Key" : "StackId", "Value" : { "Ref" : "AWS::StackId" } } ],
+				"Tags" : [
+					{ "Key" : "StackId", "Value" : { "Ref" : "AWS::StackId" } },
+					{ "Key" : "Name", "Value" : "AdminSecurityGroup" }
+				],
 				"SecurityGroupIngress" : [
 					{
 						"IpProtocol" : "tcp",
