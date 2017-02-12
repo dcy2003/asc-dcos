@@ -5,6 +5,13 @@
 
 	"Parameters" : {
 
+		"Environment" : {
+			"Description" : "Target deployment environment",
+			"Type" : "String",
+			"Default" : "aws",
+			"AllowedValues" : [ "aws" , "uc2s" , "sc2s", "c2s" ]
+		},
+
 		"VpcCidr" : {
 			"Description" : "The CIDR block the VPC will cover",
 			"Type" : "String",
@@ -13,6 +20,12 @@
 			"Default" : "10.0.0.0/16",
 			"AllowedPattern" : "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
 			"ConstraintDescription" : "must be a valid IP CIDR range of the form x.x.x.x/x."
+    	},
+
+    	"VpcId" : {
+    		"Description" : "ID of pre-existing VPC to re-use (if applicable)",
+    		"Type" : "AWS::EC2::VPC::Id",
+    		"Default" : "AWS::NoValue"
     	},
 
     	"PrivateSubnetCidr" : {
@@ -33,6 +46,12 @@
 			"Default" : "10.0.128.0/20",
 			"AllowedPattern" : "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
 			"ConstraintDescription" : "must be a valid IP CIDR range of the form x.x.x.x/x."
+    	},
+
+    	"PublicSubnetId" : {
+    		"Description" : "ID of pre-existing public subnet to re-use (if applicable)",
+    		"Type" : "AWS::EC2::Subnet::Id",
+    		"Default" : "AWS::NoValue"
     	},
 
     	"NATInstanceType" : {
@@ -68,6 +87,10 @@
 			"ConstraintDescription" : "must be a valid IP CIDR range of the form x.x.x.x/x."
     	}
 
+	},
+
+	"Conditions" : {
+		"CreatePrerequisites" : { "Fn::Not" : [ { "Ref" : "Environment" } , "c2s"] }
 	},
 
 	"Mappings" : {
@@ -109,6 +132,7 @@
 
 		"MyVPC" : {
 			"Type" : "AWS::EC2::VPC",
+			"Condition" : "CreatePrerequisites",
 			"Properties" : {
 				"CidrBlock" : { "Ref" : "VpcCidr" },
 				"Tags" : [ 
@@ -120,6 +144,7 @@
 
 		"InternetGateway" : {
 			"Type" : "AWS::EC2::InternetGateway",
+			"Condition" : "CreatePrerequisites",
 			"Properties" : {
 				"Tags" : [ 
 					{ "Key" : "StackId", "Value" : { "Ref" : "AWS::StackId" } },
@@ -130,6 +155,7 @@
 
 		"AttachInternetGatewayToVPC" : {
 			"Type" : "AWS::EC2::VPCGatewayAttachment",
+			"Condition" : "CreatePrerequisites",
 			"Properties" : {
 				"InternetGatewayId" : { "Ref" : "InternetGateway" },
 				"VpcId" : { "Ref" : "MyVPC" }
@@ -138,6 +164,7 @@
 
 		"PublicSubnet" : {
 			"Type" : "AWS::EC2::Subnet",
+			"Condition" : "CreatePrerequisites",
 			"Properties" : {
 				"CidrBlock" : { "Ref" : "PublicSubnetCidr" },
 				"VpcId" : { "Ref" : "MyVPC" },
@@ -150,6 +177,7 @@
 
 		"PublicRouteTable" : {
 			"Type" : "AWS::EC2::RouteTable",
+			"Condition" : "CreatePrerequisites",
 			"Properties" : {
 				"VpcId" : { "Ref" : "MyVPC" },
 				"Tags" : [ 
@@ -162,6 +190,7 @@
 
 		"PublicRoute" : {
 			"Type" : "AWS::EC2::Route",
+			"Condition" : "CreatePrerequisites",
 			"Properties" : {
 				"DestinationCidrBlock" : "0.0.0.0/0",
 				"GatewayId" : { "Ref" : "InternetGateway" },
@@ -171,6 +200,7 @@
 
 		"PublicSubnetRouteTableAssociation" : {
 			"Type" : "AWS::EC2::SubnetRouteTableAssociation",
+			"Condition" : "CreatePrerequisites",
 			"Properties" : {
 				"RouteTableId" : { "Ref" : "PublicRouteTable" },
 				"SubnetId" : { "Ref" : "PublicSubnet" }
@@ -179,6 +209,7 @@
 
 		"PrivateSubnet" : {
 			"Type" : "AWS::EC2::Subnet",
+			"Condition" : "CreatePrerequisites",
 			"Properties" : {
 				"CidrBlock" : { "Ref" : "PrivateSubnetCidr" },
 				"VpcId" : { "Ref" : "MyVPC" },
@@ -191,6 +222,7 @@
 
 		"PrivateRouteTable" : {
 			"Type" : "AWS::EC2::RouteTable",
+			"Condition" : "CreatePrerequisites",
 			"Properties" : {
 				"VpcId" : { "Ref" : "MyVPC" },
 				"Tags" : [ 
@@ -203,6 +235,7 @@
 
 		"PrivateRoute" : {
 			"Type" : "AWS::EC2::Route",
+			"Condition" : "CreatePrerequisites",
 			"Properties" : {
 				"DestinationCidrBlock" : "0.0.0.0/0",
 				"InstanceId" : { "Ref" : "NATInstance" },
@@ -212,6 +245,7 @@
 
 		"PrivateSubnetRouteTableAssociation" : {
 			"Type" : "AWS::EC2::SubnetRouteTableAssociation",
+			"Condition" : "CreatePrerequisites",
 			"Properties" : {
 				"RouteTableId" : { "Ref" : "PrivateRouteTable" },
 				"SubnetId" : { "Ref" : "PrivateSubnet" }
@@ -220,6 +254,7 @@
 
 		"PublicNetworkAcl" : {
 			"Type" : "AWS::EC2::NetworkAcl",
+			"Condition" : "CreatePrerequisites",
 			"Properties" : {
 				"VpcId" : { "Ref" : "MyVPC" },
 				"Tags" : [ 
@@ -232,6 +267,7 @@
 
 		"PublicInboundNetworkAclEntry" : {
 			"Type" : "AWS::EC2::NetworkAclEntry",
+			"Condition" : "CreatePrerequisites",
 			"Properties" : {
 				"CidrBlock" : "0.0.0.0/0",
 				"Egress" : "false",
@@ -248,6 +284,7 @@
 
 		"PublicOutboundNetworkAclEntry" : {
 			"Type" : "AWS::EC2::NetworkAclEntry",
+			"Condition" : "CreatePrerequisites",
 			"Properties" : {
 				"CidrBlock" : "0.0.0.0/0",
 				"Egress" : "true",
@@ -264,6 +301,7 @@
 
 		"PublicSubnetNetworkAclAssociation" : {
 			"Type" : "AWS::EC2::SubnetNetworkAclAssociation",
+			"Condition" : "CreatePrerequisites",
 			"Properties" : {
 				"SubnetId" : { "Ref" : "PublicSubnet" },
 				"NetworkAclId" : { "Ref" : "PublicNetworkAcl" }
@@ -272,6 +310,7 @@
 
 		"PrivateNetworkAcl" : {
 			"Type" : "AWS::EC2::NetworkAcl",
+			"Condition" : "CreatePrerequisites",
 			"Properties" : {
 				"VpcId" : { "Ref" : "MyVPC" },
 				"Tags" : [ 
@@ -284,6 +323,7 @@
 
 		"PrivateInboundNetworkAclEntry" : {
 			"Type" : "AWS::EC2::NetworkAclEntry",
+			"Condition" : "CreatePrerequisites",
 			"Properties" : {
 				"CidrBlock" : "0.0.0.0/0",
 				"Egress" : "false",
@@ -300,6 +340,7 @@
 
 		"PrivateOutboundNetworkAclEntry" : {
 			"Type" : "AWS::EC2::NetworkAclEntry",
+			"Condition" : "CreatePrerequisites",
 			"Properties" : {
 				"CidrBlock" : "0.0.0.0/0",
 				"Egress" : "true",
@@ -316,6 +357,7 @@
 
 		"PrivateSubnetNetworkAclAssociation" : {
 			"Type" : "AWS::EC2::SubnetNetworkAclAssociation",
+			"Condition" : "CreatePrerequisites",
 			"Properties" : {
 				"SubnetId" : { "Ref" : "PrivateSubnet" },
 				"NetworkAclId" : { "Ref" : "PrivateNetworkAcl" }
@@ -634,42 +676,50 @@
 
 		"VpcId" : {
 			"Description" : "The ID of the VPC",
-			"Value" : { "Ref" : "MyVPC" }
+			"Value" : { "Ref" : "MyVPC" },
+			"Condition" : "CreatePrerequisites"
 		},
 
 		"InternetGatewayId" : {
 			"Description" : "The ID of the Internet Gateway",
-			"Value" : { "Ref" : "InternetGateway" }
+			"Value" : { "Ref" : "InternetGateway" },
+			"Condition" : "CreatePrerequisites"
 		},
 
 		"PublicSubnetId" : {
 			"Description" : "The ID of the public subnet",
-			"Value" : { "Ref" : "PublicSubnet" }
+			"Value" : { "Ref" : "PublicSubnet" },
+			"Condition" : "CreatePrerequisites"
 		},
 
 		"PublicRouteTableId" : {
 			"Description" : "The ID of the Public Route Table",
-			"Value" : { "Ref" : "PublicRouteTable" }
+			"Value" : { "Ref" : "PublicRouteTable" },
+			"Condition" : "CreatePrerequisites"
 		},
 
 		"PublicNetworkAclId" : {
 			"Description" : "The ID of the public NACL",
-			"Value" : { "Ref" : "PublicNetworkAcl" }
+			"Value" : { "Ref" : "PublicNetworkAcl" },
+			"Condition" : "CreatePrerequisites"
 		},
 
 		"PrivateSubnetId" : {
 			"Description" : "The ID of the private subnet",
-			"Value" : { "Ref" : "PrivateSubnet" }
+			"Value" : { "Ref" : "PrivateSubnet" },
+			"Condition" : "CreatePrerequisites"
 		},
 
 		"PrivateRouteTableId" : {
 			"Description" : "The ID of the Private Route Table",
-			"Value" : { "Ref" : "PrivateRouteTable" }
+			"Value" : { "Ref" : "PrivateRouteTable" },
+			"Condition" : "CreatePrerequisites"
 		},
 
 		"PrivateNetworkAclId" : {
 			"Description" : "The ID of the private NACL",
-			"Value" : { "Ref" : "PrivateNetworkAcl" }
+			"Value" : { "Ref" : "PrivateNetworkAcl" },
+			"Condition" : "CreatePrerequisites"
 		},
 
 		"NatInstanceId" : {
