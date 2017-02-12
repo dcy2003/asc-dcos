@@ -130,7 +130,7 @@
 
 	"Resources" : {
 
-		"MyVPC" : {
+		"VPC" : {
 			"Type" : "AWS::EC2::VPC",
 			"Condition" : "CreatePrerequisites",
 			"Properties" : {
@@ -158,7 +158,7 @@
 			"Condition" : "CreatePrerequisites",
 			"Properties" : {
 				"InternetGatewayId" : { "Ref" : "InternetGateway" },
-				"VpcId" : { "Ref" : "MyVPC" }
+				"VpcId" : { "Ref" : "VPC" }
 			}
 		},
 
@@ -167,7 +167,7 @@
 			"Condition" : "CreatePrerequisites",
 			"Properties" : {
 				"CidrBlock" : { "Ref" : "PublicSubnetCidr" },
-				"VpcId" : { "Ref" : "MyVPC" },
+				"VpcId" : { "Ref" : "VPC" },
 				"Tags" : [ 
 					{ "Key" : "StackId", "Value" : { "Ref" : "AWS::StackId" } },
 					{ "Key" : "Name", "Value" : { "Fn::Join" : [ "", [{ "Ref" : "AWS::StackName" }, "-public"]]} }
@@ -179,7 +179,7 @@
 			"Type" : "AWS::EC2::RouteTable",
 			"Condition" : "CreatePrerequisites",
 			"Properties" : {
-				"VpcId" : { "Ref" : "MyVPC" },
+				"VpcId" : { "Ref" : "VPC" },
 				"Tags" : [ 
 					{ "Key" : "StackId", "Value" : { "Ref" : "AWS::StackId" } },
 					{ "Key" : "Application", "Value" : { "Ref" : "AWS::StackName" } },
@@ -212,7 +212,7 @@
 			"Condition" : "CreatePrerequisites",
 			"Properties" : {
 				"CidrBlock" : { "Ref" : "PrivateSubnetCidr" },
-				"VpcId" : { "Ref" : "MyVPC" },
+				"VpcId" : { "Ref" : "VPC" },
 				"Tags" : [ 
 					{ "Key" : "StackId", "Value" : { "Ref" : "AWS::StackId" } },
 					{ "Key" : "Name", "Value" : { "Fn::Join" : [ "", [{ "Ref" : "AWS::StackName" }, "-private"]]} }
@@ -224,7 +224,7 @@
 			"Type" : "AWS::EC2::RouteTable",
 			"Condition" : "CreatePrerequisites",
 			"Properties" : {
-				"VpcId" : { "Ref" : "MyVPC" },
+				"VpcId" : { "Ref" : "VPC" },
 				"Tags" : [ 
 					{ "Key" : "StackId", "Value" : { "Ref" : "AWS::StackId" } },
 					{ "Key" : "Application", "Value" : { "Ref" : "AWS::StackName" } },
@@ -256,7 +256,7 @@
 			"Type" : "AWS::EC2::NetworkAcl",
 			"Condition" : "CreatePrerequisites",
 			"Properties" : {
-				"VpcId" : { "Ref" : "MyVPC" },
+				"VpcId" : { "Ref" : "VPC" },
 				"Tags" : [ 
 					{ "Key" : "StackId", "Value" : { "Ref" : "AWS::StackId" } },
 					{ "Key" : "Application", "Value" : { "Ref" : "AWS::StackName" } },
@@ -312,7 +312,7 @@
 			"Type" : "AWS::EC2::NetworkAcl",
 			"Condition" : "CreatePrerequisites",
 			"Properties" : {
-				"VpcId" : { "Ref" : "MyVPC" },
+				"VpcId" : { "Ref" : "VPC" },
 				"Tags" : [ 
 					{ "Key" : "StackId", "Value" : { "Ref" : "AWS::StackId" } },
 					{ "Key" : "Application", "Value" : { "Ref" : "AWS::StackName" } },
@@ -402,7 +402,7 @@
 				"GroupDescription" : "Mesos Private Agents",
 				"VpcId" : { "Fn:If" : [
 						"CreatePrerequisites",
-						{ "Ref" : "MyVPC" },
+						{ "Ref" : "VPC" },
 						{ "Ref" : "VpcId" }
 					] 
 				},
@@ -416,7 +416,7 @@
 				"GroupDescription" : "Mesos Master LB",
 				"VpcId" : { "Fn:If" : [
 						"CreatePrerequisites",
-						{ "Ref" : "MyVPC" },
+						{ "Ref" : "VPC" },
 						{ "Ref" : "VpcId" }
 					] 
 				},
@@ -430,7 +430,7 @@
 				"GroupDescription" : "Mesos Public Agents",
 				"VpcId" : { "Fn:If" : [
 						"CreatePrerequisites",
-						{ "Ref" : "MyVPC" },
+						{ "Ref" : "VPC" },
 						{ "Ref" : "VpcId" }
 					] 
 				},
@@ -444,7 +444,7 @@
 				"GroupDescription" : "Mesos Masters",
 				"VpcId" : { "Fn:If" : [
 						"CreatePrerequisites",
-						{ "Ref" : "MyVPC" },
+						{ "Ref" : "VPC" },
 						{ "Ref" : "VpcId" }
 					] 
 				},
@@ -496,7 +496,7 @@
 				"GroupDescription" : "Enable admin access to servers",
 				"VpcId" : { "Fn:If" : [
 						"CreatePrerequisites",
-						{ "Ref" : "MyVPC" },
+						{ "Ref" : "VPC" },
 						{ "Ref" : "VpcId" }
 					] 
 				},
@@ -706,7 +706,7 @@
 
 		"VpcId" : {
 			"Description" : "The ID of the VPC",
-			"Value" : { "Ref" : "MyVPC" },
+			"Value" : { "Ref" : "VPC" },
 			"Condition" : "CreatePrerequisites"
 		},
 
