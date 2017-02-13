@@ -11,7 +11,7 @@
       ],
       "Type": "AWS::CloudFormation::Stack",
       "Properties": {
-        "TemplateURL": "https://s3.amazonaws.com/asc-devops/HA-east-dcos-asc/HA-dcos-east-asc-public.json",
+        "TemplateURL": "https://s3.amazonaws.com/asc-dcos/1.8/cloudformation/public.json",
         "Parameters": {
           "PublicAgentInstanceType": {
             "Ref": "PublicAgentInstanceType"
@@ -56,7 +56,7 @@
     "Infrastructure": {
       "Type": "AWS::CloudFormation::Stack",
       "Properties": {
-        "TemplateURL": "https://s3.amazonaws.com/asc-devops/HA-east-dcos-asc/infra.json",
+        "TemplateURL": "https://s3.amazonaws.com/asc-dcos/1.8/cloudformation/infrastructure.json",
         "Parameters": {
           "PrivateSubnet": {
             "Ref": "PrivateSubnet"
@@ -87,7 +87,7 @@
       ],
       "Type": "AWS::CloudFormation::Stack",
       "Properties": {
-        "TemplateURL": "https://s3.amazonaws.com/asc-devops/HA-east-dcos-asc/HA-dcos-east-asc-private.json",
+        "TemplateURL": "https://s3.amazonaws.com/asc-dcos/1.8/cloudformation/private.json",
         "Parameters": {
           "PrivateAgentSecurityGroup": {
             "Fn::GetAtt": [
@@ -135,7 +135,7 @@
       ],
       "Type": "AWS::CloudFormation::Stack",
       "Properties": {
-        "TemplateURL": "https://s3.amazonaws.com/asc-devops/HA-east-dcos-asc/HA-dcos-east-asc-master.json",
+        "TemplateURL": "https://s3.amazonaws.com/asc-dcos/1.8/cloudformation/master.json",
         "Parameters": {
           "LbSecurityGroup": {
             "Fn::GetAtt": [
