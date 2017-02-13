@@ -22,8 +22,14 @@
           "PublicAgentInstanceCount": {
             "Ref": "PublicAgentInstanceCount"
           },
-          "PublicSubnet": {
-            "Ref": "PublicSubnet"
+          "PublicSubnet": { "Fn::If" : [
+              "CreatePrerequisites",
+              { "Fn::GetAtt": [
+                "Infrastructure",
+                "Outputs.PublicSubnetId"
+              ] },
+              { "Ref" : "PublicSubnetId" }
+            ] 
           },
           "InternalMasterLoadBalancerDnsName": {
             "Fn::GetAtt": [
@@ -58,23 +64,24 @@
       "Properties": {
         "TemplateURL": "https://s3.amazonaws.com/asc-dcos/1.8/cloudformation/infrastructure.json",
         "Parameters": {
-          "PrivateSubnet": {
-            "Ref": "PrivateSubnet"
+          "Environment" : { "Ref" : "Environment" },
+          "VpcCidr" : { "Ref" : "VpcCidr" },
+          "VpcId" : { "Ref" : "VpcId" },
+          "PublicAgentIngressCidr" : { "Ref" : "PublicAgentIngressCidr" },
+          "PrivateSubnetCidr": {
+            "Ref": "PrivateSubnetCidr"
           },
           "AdminLocation": {
             "Ref": "AdminLocation"
           },
-          "PublicSubnet": {
-            "Ref": "PublicSubnet"
+          "PublicSubnetCidr": {
+            "Ref": "PublicSubnetCidr"
           },
-          "InternetGateway": {
-            "Ref": "InternetGateway"
+          "PublicSubnetId": {
+            "Ref": "PublicSubnetId"
           },
           "KeyName": {
             "Ref": "KeyName"
-          },
-          "Vpc": {
-            "Ref": "Vpc"
           }
         },
         "TimeoutInMinutes": "60"
@@ -176,8 +183,14 @@
               "Outputs.PublicAgentSecurityGroupId"
             ]
           },
-          "PublicSubnet": {
-            "Ref": "PublicSubnet"
+          "PublicSubnet": { "Fn::If" : [
+              "CreatePrerequisites",
+              { "Fn::GetAtt": [
+                "Infrastructure",
+                "Outputs.PublicSubnetId"
+              ] },
+              { "Ref" : "PublicSubnetId" }
+            ] 
           },
           "ExhibitorS3Bucket": {
 	    "Ref": "ExhibitorS3Bucket"
@@ -216,19 +229,26 @@
   },
   "AWSTemplateFormatVersion": "2010-09-09",
   "Parameters": {
-    "PrivateSubnet": {
-      "Description": "\nSubnet ID for use by all private agent nodes",
-      "Type": "AWS::EC2::Subnet::Id"
+    "Environment" : {
+      "Description" : "Target deployment environment",
+      "Type" : "String",
+      "Default" : "aws",
+      "AllowedValues" : [ "aws" , "uc2s" , "sc2s", "c2s" ]
+    },
+    "PrivateSubnetCidr" : {
+      "Description" : "The CIDR block for the private subnet",
+      "Type" : "String",
+      "MinLength" : "9",
+      "MaxLength" : "18",
+      "Default" : "10.0.0.0/17",
+      "AllowedPattern" : "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+      "ConstraintDescription" : "must be a valid IP CIDR range of the form x.x.x.x/x."
     },
     "CustomAMI": {
       "AllowedPattern": "(default|ami-[a-f0-9]{8})",
       "Default": "default",
       "Type": "String",
       "Description": "\nExisting AMI in the deploy region which has all DC/OS pre-requisites installed or 'default'"
-    },
-    "InternetGateway": {
-      "Description": "\nInternet Gateway ID, must be attached to the 'Vpc'. Used by all nodes for outgoing Internet access.",
-      "Type": "String"
     },
     "KeyName": {
       "Description": "\nSpecify your AWS EC2 Key Pair.",
@@ -254,27 +274,33 @@
       "Type": "Number",
       "Description": "\nSpecify the number of public agent nodes or accept the default."
     },
-    "PublicSubnet": {
-      "Description": "\nSubnet ID for use by all public agent nodes",
-      "Type": "AWS::EC2::Subnet::Id"
+    "PublicSubnetCidr" : {
+      "Description" : "The CIDR block for the public subnet",
+      "Type" : "String",
+      "MinLength" : "9",
+      "MaxLength" : "18",
+      "Default" : "10.0.128.0/20",
+      "AllowedPattern" : "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+      "ConstraintDescription" : "must be a valid IP CIDR range of the form x.x.x.x/x."
     },
-    "AdminLocation": {
-      "AllowedPattern": "^([0-9]+\\.){3}[0-9]+\\/[0-9]+$",
-      "Description": "\nOptional: Specify the IP range to whitelist for access to the admin zone. Must be a valid CIDR.",
-      "Type": "String",
-      "MinLength": "9",
-      "Default": "0.0.0.0/0",
-      "ConstraintDescription": "must be a valid CIDR.",
-      "MaxLength": "18"
+    "PublicSubnetId" : {
+      "Description" : "[optional] ID of pre-existing public subnet to re-use (C2S)",
+      "Type" : "String",
+      "Default" : ""
+     },
+    "AdminLocation" : {
+      "Description" : "Specify the IP range to whitelist for access to the admin zone. Must be a valid CIDR.",
+      "Type" : "String",
+      "MinLength" : "9",
+      "MaxLength" : "18",
+      "Default" : "128.229.4.2/32",
+      "AllowedPattern" : "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+      "ConstraintDescription" : "must be a valid IP CIDR range of the form x.x.x.x/x."
     },
     "PublicAgentInstanceType": {
       "Default": "m3.xlarge",
       "Type": "String",
       "Description": "\nRegion-specific instance type. E.g. m3.xlarge"
-    },
-    "Vpc": {
-      "Description": "\nExisting VPC to use. Nodes will be launched using subnets and Internet Gateway under this VPC",
-      "Type": "AWS::EC2::VPC::Id"
     },
     "ExhibitorS3Bucket": {
       "Description": "\nName of the Exhibitor S3 Bucket",
@@ -324,6 +350,40 @@
      
       "Type": "String"
     
+    },
+
+    "VpcCidr" : {
+      "Description" : "The CIDR block the VPC will cover",
+      "Type" : "String",
+      "MinLength" : "9",
+      "MaxLength" : "18",
+      "Default" : "10.0.0.0/16",
+      "AllowedPattern" : "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+      "ConstraintDescription" : "must be a valid IP CIDR range of the form x.x.x.x/x."
+    },
+
+    "VpcId" : {
+      "Description" : "[optional] ID of pre-existing VPC to re-use (C2S)",
+      "Type" : "String",
+      "Default" : ""
+    },
+
+    "PublicAgentIngressCidr" : {
+      "Description" : "Specify the IP range to whitelist for access to services running on public agents.",
+      "Type" : "String",
+      "MinLength" : "9",
+      "MaxLength" : "18",
+      "Default" : "128.229.4.2/32",
+      "AllowedPattern" : "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+      "ConstraintDescription" : "must be a valid IP CIDR range of the form x.x.x.x/x."
+    }
+  },
+
+  "Conditions" : {
+    "CreatePrerequisites" : {
+      "Fn::Not": [{
+        "Fn::Equals" : [ { "Ref" : "Environment" } , "c2s" ]
+      }] 
     }
   }
 }
