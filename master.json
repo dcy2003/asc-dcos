@@ -498,6 +498,11 @@
             "PropagateAtLaunch": "true",
             "Key": "role",
             "Value": "mesos-master"
+          },
+          {
+            "PropagateAtLaunch": "true",
+            "Key": "Name",
+            "Value": "mesos-master"
           }
         ],
         "VPCZoneIdentifier": [

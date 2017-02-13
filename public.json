@@ -366,6 +366,11 @@
             "PropagateAtLaunch": "true",
             "Key": "role",
             "Value": "mesos-public-agent"
+          },
+          {
+            "PropagateAtLaunch": "true",
+            "Key": "Name",
+            "Value": "mesos-public-agent"
           }
         ],
         "VPCZoneIdentifier": [

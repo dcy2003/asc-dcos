@@ -328,6 +328,11 @@
             "PropagateAtLaunch": "true",
             "Value": "mesos-private-agent",
             "Key": "role"
+          },
+          {
+            "PropagateAtLaunch": "true",
+            "Value": "mesos-private-agent",
+            "Key": "Name"
           }
         ],
         "VPCZoneIdentifier": [
