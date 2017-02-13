@@ -14,4 +14,5 @@ aws cloudformation create-stack \
     ParameterKey=PrivateAgentInstanceProfile,ParameterValue=FILL_ME_IN \
     ParameterKey=MasterRole,ParameterValue=FILL_ME_IN \
     ParameterKey=MasterInstanceProfile,ParameterValue=FILL_ME_IN \
-    ParameterKey=KeyName,ParameterValue=dcos-west-key-pair
+    ParameterKey=KeyName,ParameterValue=dcos-west-key-pair \
+    --capabilities CAPABILITY_NAMED_IAM
