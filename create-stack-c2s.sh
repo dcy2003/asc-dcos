@@ -15,4 +15,5 @@ aws cloudformation create-stack \
     ParameterKey=MasterRole,ParameterValue=FILL_ME_IN \
     ParameterKey=MasterInstanceProfile,ParameterValue=FILL_ME_IN \
     ParameterKey=KeyName,ParameterValue=dcos-west-key-pair \
+    ParameterKey=ExhibitorS3Bucket,ParameterValue=FILL_ME_IN \
     --capabilities CAPABILITY_NAMED_IAM
