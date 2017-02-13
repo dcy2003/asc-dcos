@@ -102,8 +102,14 @@
               "Outputs.PrivateAgentSecurityGroupId"
             ]
           },
-          "PrivateSubnet": {
-            "Ref": "PrivateSubnet"
+          "PrivateSubnet": { "Fn::If" : [
+              "CreatePrerequisites",
+              { "Fn::GetAtt": [
+                "Infrastructure",
+                "Outputs.PrivateSubnetId"
+              ] },
+              { "Ref" : "PrivateSubnetId" }
+            ] 
           },
           "CustomAMI": {
             "Ref": "CustomAMI"
@@ -150,8 +156,14 @@
               "Outputs.LbSecurityGroupId"
             ]
           },
-          "PrivateSubnet": {
-            "Ref": "PrivateSubnet"
+          "PrivateSubnet": { "Fn::If" : [
+              "CreatePrerequisites",
+              { "Fn::GetAtt": [
+                "Infrastructure",
+                "Outputs.PrivateSubnetId"
+              ] },
+              { "Ref" : "PrivateSubnetId" }
+            ] 
           },
           "KeyName": {
             "Ref": "KeyName"
@@ -288,6 +300,11 @@
       "Type" : "String",
       "Default" : ""
      },
+    "PrivateSubnetId" : {
+        "Description" : "[optional] ID of pre-existing private subnet to re-use (C2S)",
+        "Type" : "String",
+        "Default" : ""
+    },
     "AdminLocation" : {
       "Description" : "Specify the IP range to whitelist for access to the admin zone. Must be a valid CIDR.",
       "Type" : "String",
