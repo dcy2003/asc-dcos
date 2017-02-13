@@ -1,0 +1,329 @@
+{
+  "Metadata": {
+    "DcosImageCommit": "722fcc50c4ac556a9484836bf8a3bb4add4bf14d",
+    "TemplateGenerationDate": "2016-11-02 21:15:22.013536"
+  },
+  "Resources": {
+    "PublicAgentStack": {
+      "DependsOn": [
+        "Infrastructure",
+        "MasterStack"
+      ],
+      "Type": "AWS::CloudFormation::Stack",
+      "Properties": {
+        "TemplateURL": "https://s3.amazonaws.com/asc-devops/HA-east-dcos-asc/HA-dcos-east-asc-public.json",
+        "Parameters": {
+          "PublicAgentInstanceType": {
+            "Ref": "PublicAgentInstanceType"
+          },
+          "CustomAMI": {
+            "Ref": "CustomAMI"
+          },
+          "PublicAgentInstanceCount": {
+            "Ref": "PublicAgentInstanceCount"
+          },
+          "PublicSubnet": {
+            "Ref": "PublicSubnet"
+          },
+          "InternalMasterLoadBalancerDnsName": {
+            "Fn::GetAtt": [
+              "MasterStack",
+              "Outputs.InternalMasterLoadBalancerDnsName"
+            ]
+          },
+          "PublicAgentSecurityGroup": {
+            "Fn::GetAtt": [
+              "Infrastructure",
+              "Outputs.PublicAgentSecurityGroupId"
+            ]
+          },
+          "KeyName": {
+            "Ref": "KeyName"
+          },
+          "PublicAgentRole": {
+      
+            "Ref": "PublicAgentRole"
+          },
+    
+          "PublicAgentInstanceProfile": {
+      
+            "Ref": "PublicAgentInstanceProfile"
+          }
+        },
+        "TimeoutInMinutes": "60"
+      }
+    },
+    "Infrastructure": {
+      "Type": "AWS::CloudFormation::Stack",
+      "Properties": {
+        "TemplateURL": "https://s3.amazonaws.com/asc-devops/HA-east-dcos-asc/infra.json",
+        "Parameters": {
+          "PrivateSubnet": {
+            "Ref": "PrivateSubnet"
+          },
+          "AdminLocation": {
+            "Ref": "AdminLocation"
+          },
+          "PublicSubnet": {
+            "Ref": "PublicSubnet"
+          },
+          "InternetGateway": {
+            "Ref": "InternetGateway"
+          },
+          "KeyName": {
+            "Ref": "KeyName"
+          },
+          "Vpc": {
+            "Ref": "Vpc"
+          }
+        },
+        "TimeoutInMinutes": "60"
+      }
+    },
+    "PrivateAgentStack": {
+      "DependsOn": [
+        "Infrastructure",
+        "MasterStack"
+      ],
+      "Type": "AWS::CloudFormation::Stack",
+      "Properties": {
+        "TemplateURL": "https://s3.amazonaws.com/asc-devops/HA-east-dcos-asc/HA-dcos-east-asc-private.json",
+        "Parameters": {
+          "PrivateAgentSecurityGroup": {
+            "Fn::GetAtt": [
+              "Infrastructure",
+              "Outputs.PrivateAgentSecurityGroupId"
+            ]
+          },
+          "PrivateSubnet": {
+            "Ref": "PrivateSubnet"
+          },
+          "CustomAMI": {
+            "Ref": "CustomAMI"
+          },
+          "PrivateAgentInstanceType": {
+            "Ref": "PrivateAgentInstanceType"
+          },
+          "KeyName": {
+            "Ref": "KeyName"
+          },
+          "PrivateAgentInstanceCount": {
+            "Ref": "PrivateAgentInstanceCount"
+          },
+          "InternalMasterLoadBalancerDnsName": {
+            "Fn::GetAtt": [
+              "MasterStack",
+              "Outputs.InternalMasterLoadBalancerDnsName"
+            ]
+          },
+          "PrivateAgentRole": {
+      
+            "Ref": "PrivateAgentRole"
+          },
+    
+          "PrivateAgentInstanceProfile": {
+      
+            "Ref": "PrivateAgentInstanceProfile"
+          }
+        },
+        "TimeoutInMinutes": "60"
+      }
+    },
+    "MasterStack": {
+      "DependsOn": [
+        "Infrastructure"
+      ],
+      "Type": "AWS::CloudFormation::Stack",
+      "Properties": {
+        "TemplateURL": "https://s3.amazonaws.com/asc-devops/HA-east-dcos-asc/HA-dcos-east-asc-master.json",
+        "Parameters": {
+          "LbSecurityGroup": {
+            "Fn::GetAtt": [
+              "Infrastructure",
+              "Outputs.LbSecurityGroupId"
+            ]
+          },
+          "PrivateSubnet": {
+            "Ref": "PrivateSubnet"
+          },
+          "KeyName": {
+            "Ref": "KeyName"
+          },
+          "PrivateAgentSecurityGroup": {
+            "Fn::GetAtt": [
+              "Infrastructure",
+              "Outputs.PrivateAgentSecurityGroupId"
+            ]
+          },
+          "AdminSecurityGroup": {
+            "Fn::GetAtt": [
+              "Infrastructure",
+              "Outputs.AdminSecurityGroupId"
+            ]
+          },
+          "MasterSecurityGroup": {
+            "Fn::GetAtt": [
+              "Infrastructure",
+              "Outputs.MasterSecurityGroupId"
+            ]
+          },
+          "CustomAMI": {
+            "Ref": "CustomAMI"
+          },
+          "PublicAgentSecurityGroup": {
+            "Fn::GetAtt": [
+              "Infrastructure",
+              "Outputs.PublicAgentSecurityGroupId"
+            ]
+          },
+          "PublicSubnet": {
+            "Ref": "PublicSubnet"
+          },
+          "ExhibitorS3Bucket": {
+	    "Ref": "ExhibitorS3Bucket"
+          },
+          "MasterInstanceType": {
+            "Ref": "MasterInstanceType"
+          },
+          "MasterRole": {
+      
+            "Ref": "MasterRole"
+          },
+   
+          "MasterInstanceProfile": {
+      
+            "Ref": "MasterInstanceProfile"
+          }
+        },
+        "TimeoutInMinutes": "60"
+      }
+    }
+  },
+  "Outputs": {
+    "OutputFromNestedStack": {
+      "Value": {
+        "Fn::GetAtt": [
+          "MasterStack",
+          "Outputs.MasterDNSName"
+        ]
+      }
+    },
+    "StackRef": {
+      "Value": {
+        "Ref": "MasterStack"
+      }
+    }
+  },
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Parameters": {
+    "PrivateSubnet": {
+      "Description": "\nSubnet ID for use by all private agent nodes",
+      "Type": "AWS::EC2::Subnet::Id"
+    },
+    "CustomAMI": {
+      "AllowedPattern": "(default|ami-[a-f0-9]{8})",
+      "Default": "default",
+      "Type": "String",
+      "Description": "\nExisting AMI in the deploy region which has all DC/OS pre-requisites installed or 'default'"
+    },
+    "InternetGateway": {
+      "Description": "\nInternet Gateway ID, must be attached to the 'Vpc'. Used by all nodes for outgoing Internet access.",
+      "Type": "String"
+    },
+    "KeyName": {
+      "Description": "\nSpecify your AWS EC2 Key Pair.",
+      "Type": "AWS::EC2::KeyPair::KeyName"
+    },
+    "PrivateAgentInstanceCount": {
+      "Default": "5",
+      "Type": "Number",
+      "Description": "\nSpecify the number of private agent nodes or accept the default."
+    },
+    "MasterInstanceType": {
+      "Default": "m3.xlarge",
+      "Type": "String",
+      "Description": "\nRegion-specific instance type. E.g. m3.xlarge"
+    },
+    "PrivateAgentInstanceType": {
+      "Default": "m3.xlarge",
+      "Type": "String",
+      "Description": "\nRegion-specific instance type. E.g. m3.xlarge"
+    },
+    "PublicAgentInstanceCount": {
+      "Default": "5",
+      "Type": "Number",
+      "Description": "\nSpecify the number of public agent nodes or accept the default."
+    },
+    "PublicSubnet": {
+      "Description": "\nSubnet ID for use by all public agent nodes",
+      "Type": "AWS::EC2::Subnet::Id"
+    },
+    "AdminLocation": {
+      "AllowedPattern": "^([0-9]+\\.){3}[0-9]+\\/[0-9]+$",
+      "Description": "\nOptional: Specify the IP range to whitelist for access to the admin zone. Must be a valid CIDR.",
+      "Type": "String",
+      "MinLength": "9",
+      "Default": "0.0.0.0/0",
+      "ConstraintDescription": "must be a valid CIDR.",
+      "MaxLength": "18"
+    },
+    "PublicAgentInstanceType": {
+      "Default": "m3.xlarge",
+      "Type": "String",
+      "Description": "\nRegion-specific instance type. E.g. m3.xlarge"
+    },
+    "Vpc": {
+      "Description": "\nExisting VPC to use. Nodes will be launched using subnets and Internet Gateway under this VPC",
+      "Type": "AWS::EC2::VPC::Id"
+    },
+    "ExhibitorS3Bucket": {
+      "Description": "\nName of the Exhibitor S3 Bucket",
+      "Type": "String"
+    },
+    "PublicAgentRole": {
+      
+      "Description": "\nPublic Agent Role",
+      
+      "Type": "String"
+    
+    },
+    
+    "PublicAgentInstanceProfile": {
+      
+      "Description": "\nPublic Agent Instance Profile",
+     
+      "Type": "String"
+    
+    },
+    "PrivateAgentRole": {
+      
+      "Description": "\nPrivate Agent Role",
+      
+      "Type": "String"
+    
+    },
+    
+    "PrivateAgentInstanceProfile": {
+      
+      "Description": "\nPrivate Agent Instance Profile",
+     
+      "Type": "String"
+    
+    },
+    "MasterRole": {
+      
+      "Description": "\nMaster Role",
+      
+      "Type": "String"
+    
+    },
+    
+    "MasterInstanceProfile": {
+      
+      "Description": "\nMaster Instance Profile",
+     
+      "Type": "String"
+    
+    }
+  }
+}

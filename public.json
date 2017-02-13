@@ -1,0 +1,444 @@
+{
+  "Mappings": {
+    "NATAmi": {
+      "us-east-1": { 
+        "default": "ami-2b2b296e"
+      },
+      "us-iso-east-1": { 
+        "default": "ami-e84db0ff"
+      },
+      "us-west-1": { 
+        "default": "ami-2b2b296e"
+      }
+
+    },
+    "Parameters": {
+      "StackCreationTimeout": {
+        "default": "PT99M"
+      }
+    },
+    "RegionToAmi": {
+      "us-east-1": {
+        "el7": "ami-47096750"
+      },
+      "us-iso-east-1": {
+        "el7": "ami-5bdc204c"
+      },
+      "us-west-1": {
+        "el7": "ami-e4afe284"
+      }
+
+    }
+  },
+  "Description": "DC/OS AWS Advanced Public Agent Template",
+  "Metadata": {
+    "DcosImageCommit": "722fcc50c4ac556a9484836bf8a3bb4add4bf14d",
+    "TemplateGenerationDate": "2016-11-02 21:15:22.013536"
+  },
+  "Conditions": {
+    "UseCustomAMI": {
+      "Fn::Not": [
+        {
+          "Fn::Equals": [
+            {
+              "Ref": "CustomAMI"
+            },
+            "default"
+          ]
+        }
+      ]
+    }
+  },
+  "Resources": {
+    "PublicAgentLaunchConfig": {
+      "Type": "AWS::AutoScaling::LaunchConfiguration",
+      "Properties": {
+        "ImageId": {
+          "Fn::If": [
+            "UseCustomAMI",
+            {
+              "Ref": "CustomAMI"
+            },
+            {
+              "Fn::FindInMap": [
+                "RegionToAmi",
+                {
+                  "Ref": "AWS::Region"
+                },
+                "el7"
+              ]
+            }
+          ]
+        },
+        "BlockDeviceMappings": [
+          {
+            "VirtualName": "ephemeral0",
+            "DeviceName": "/dev/sdb"
+          }
+        ],
+        "InstanceType": {
+          "Ref": "PublicAgentInstanceType"
+        },
+        "KeyName": {
+          "Ref": "KeyName"
+        },
+        "SecurityGroups": [
+          {
+            "Ref": "PublicAgentSecurityGroup"
+          }
+        ],
+        "AssociatePublicIpAddress": "true",
+        "IamInstanceProfile": {
+          "Ref": "PublicAgentInstanceProfile"
+        },
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Join": [
+              "",
+              [
+                "#cloud-config\n",
+                "\"runcmd\":\n",
+                "- - |-\n",
+                "    systemctl\n",
+                "  - |-\n",
+                "    restart\n",
+                "  - |-\n",
+                "    systemd-journald.service\n",
+                "- - |-\n",
+                "    systemctl\n",
+                "  - |-\n",
+                "    restart\n",
+                "  - |-\n",
+                "    docker.service\n",
+                "- - |-\n",
+                "    systemctl\n",
+                "  - |-\n",
+                "    start\n",
+                "  - |-\n",
+                "    dcos-link-env.service\n",
+                "- - |-\n",
+                "    systemctl\n",
+                "  - |-\n",
+                "    enable\n",
+                "  - |-\n",
+                "    dcos-setup.service\n",
+                "- - |-\n",
+                "    systemctl\n",
+                "  - |-\n",
+                "    --no-block\n",
+                "  - |-\n",
+                "    start\n",
+                "  - |-\n",
+                "    dcos-setup.service\n",
+                "\"write_files\":\n",
+                "- \"content\": |\n",
+                "    https://s3.amazonaws.com/asc-devops/files\n",
+                "  \"owner\": |-\n",
+                "    root\n",
+                "  \"path\": |-\n",
+                "    /etc/mesosphere/setup-flags/repository-url\n",
+                "  \"permissions\": |-\n",
+                "    0644\n",
+                "- \"content\": |\n",
+                "    [\"dcos-config--setup_34ffabac138107165956e4c57c818d952848719a\", \"dcos-metadata--setup_34ffabac138107165956e4c57c818d952848719a\"]\n",
+                "  \"owner\": |-\n",
+                "    root\n",
+                "  \"path\": |-\n",
+                "    /etc/mesosphere/setup-flags/cluster-packages.json\n",
+                "  \"permissions\": |-\n",
+                "    0644\n",
+                "- \"content\": |\n",
+                "    [Journal]\n",
+                "    MaxLevelConsole=warning\n",
+                "    RateLimitInterval=1s\n",
+                "    RateLimitBurst=20000\n",
+                "  \"owner\": |-\n",
+                "    root\n",
+                "  \"path\": |-\n",
+                "    /etc/systemd/journald.conf.d/dcos.conf\n",
+                "  \"permissions\": |-\n",
+                "    0644\n",
+                "- \"content\": |\n",
+                "    rexray:\n",
+                "      loglevel: info\n",
+                "      modules:\n",
+                "        default-docker:\n",
+                "          disabled: true\n",
+                "        default-admin:\n",
+                "          host: tcp://127.0.0.1:61003\n",
+                "      storageDrivers:\n",
+                "      - ec2\n",
+                "      volume:\n",
+                "        unmount:\n",
+                "          ignoreusedcount: true\n",
+                "  \"path\": |-\n",
+                "    /etc/rexray/config.yml\n",
+                "  \"permissions\": |-\n",
+                "    0644\n",
+                "- \"content\": |\n",
+                "    MESOS_CLUSTER=",
+                {
+                  "Ref": "AWS::StackName"
+                },
+                "",
+                "\n",
+                "  \"path\": |-\n",
+                "    /etc/mesosphere/setup-packages/dcos-provider-aws--setup/etc/mesos-master-provider\n",
+                "- \"content\": |\n",
+                "    ADMINROUTER_ACTIVATE_AUTH_MODULE=true\n",
+                "  \"path\": |-\n",
+                "    /etc/mesosphere/setup-packages/dcos-provider-aws--setup/etc/adminrouter.env\n",
+                "- \"content\": |\n",
+                "    MASTER_SOURCE=exhibitor_uri\n",
+                "    EXHIBITOR_URI=http://",
+                {
+                  "Ref": "InternalMasterLoadBalancerDnsName"
+                },
+                ":8181/exhibitor/v1/cluster/status",
+                "\n",
+                "    EXHIBITOR_ADDRESS=",
+                {
+                  "Ref": "InternalMasterLoadBalancerDnsName"
+                },
+                "",
+                "\n",
+                "    RESOLVERS=8.8.8.8\n",
+                "  \"path\": |-\n",
+                "    /etc/mesosphere/setup-packages/dcos-provider-aws--setup/etc/dns_config\n",
+                "- \"content\": |\n",
+                "    # File intentionally has no settings - Exhibitor is not used on DC/OS Agents\n",
+                "  \"path\": |-\n",
+                "    /etc/mesosphere/setup-packages/dcos-provider-aws--setup/etc/exhibitor\n",
+                "- \"content\": |\n",
+                "    AWS_REGION=",
+                {
+                  "Ref": "AWS::Region"
+                },
+                "",
+                "\n",
+                "    AWS_STACK_ID=",
+                {
+                  "Ref": "AWS::StackId"
+                },
+                "",
+                "\n",
+                "    AWS_STACK_NAME=",
+                {
+                  "Ref": "AWS::StackName"
+                },
+                "",
+                "\n",
+                "    AWS_IAM_MASTER_ROLE_NAME=\n",
+                "    AWS_IAM_SLAVE_ROLE_NAME=",
+                {
+                  "Ref": "PublicAgentRole"
+                },
+                "",
+                "\n",
+                "  \"path\": |-\n",
+                "    /etc/mesosphere/setup-packages/dcos-provider-aws--setup/etc/cfn_signal_metadata\n",
+                "- \"content\": |-\n",
+                "    {}\n",
+                "  \"path\": |-\n",
+                "    /etc/mesosphere/setup-packages/dcos-provider-aws--setup/pkginfo.json\n",
+                "- \"content\": |\n",
+                "    [Unit]\n",
+                "    Before=dcos.target\n",
+                "    [Service]\n",
+                "    Type=oneshot\n",
+                "    StandardOutput=journal+console\n",
+                "    StandardError=journal+console\n",
+                "    ExecStartPre=/usr/bin/mkdir -p /etc/profile.d\n",
+                "    ExecStart=/usr/bin/ln -sf /opt/mesosphere/environment.export /etc/profile.d/dcos.sh\n",
+                "  \"path\": |-\n",
+                "    /etc/systemd/system/dcos-link-env.service\n",
+                "  \"permissions\": |-\n",
+                "    0644\n",
+                "- \"content\": |\n",
+                "    [Unit]\n",
+                "    Description=Pkgpanda: Download DC/OS to this host.\n",
+                "    After=network-online.target\n",
+                "    Wants=network-online.target\n",
+                "    ConditionPathExists=!/opt/mesosphere/\n",
+                "    [Service]\n",
+                "    Type=oneshot\n",
+                "    StandardOutput=journal+console\n",
+                "    StandardError=journal+console\n",
+                "    ExecStartPre=/usr/bin/curl --keepalive-time 2 -fLsSv --retry 20 -Y 100000 -y 60 -o /tmp/bootstrap.tar.xz https://s3.amazonaws.com/asc-devops/bootstrap/62ef505c8bacdc01fe9aa1ba6c7fe440bff8982c.bootstrap.tar.xz\n",
+                "    ExecStartPre=/usr/bin/mkdir -p /opt/mesosphere\n",
+                "    ExecStart=/usr/bin/tar -axf /tmp/bootstrap.tar.xz -C /opt/mesosphere\n",
+                "    ExecStartPost=-/usr/bin/rm -f /tmp/bootstrap.tar.xz\n",
+                "  \"path\": |-\n",
+                "    /etc/systemd/system/dcos-download.service\n",
+                "  \"permissions\": |-\n",
+                "    0644\n",
+                "- \"content\": |\n",
+                "    [Unit]\n",
+                "    Description=Pkgpanda: Specialize DC/OS for this host.\n",
+                "    Requires=dcos-download.service\n",
+                "    After=dcos-download.service\n",
+                "    [Service]\n",
+                "    Type=oneshot\n",
+                "    StandardOutput=journal+console\n",
+                "    StandardError=journal+console\n",
+                "    EnvironmentFile=/opt/mesosphere/environment\n",
+                "    ExecStartPre=/root/asc.setup\n",
+                "    ExecStart=/opt/mesosphere/bin/pkgpanda setup --no-block-systemd\n",
+                "    [Install]\n",
+                "    WantedBy=multi-user.target\n",
+                "  \"path\": |-\n",
+                "    /etc/systemd/system/dcos-setup.service\n",
+                "  \"permissions\": |-\n",
+                "    0644\n",
+                "- \"content\": |\n",
+                "    #!/bin/bash\n",
+                "    CONFIG_ID=34ffabac138107165956e4c57c818d952848719a\n",
+                "    mkdir -p /opt/mesosphere/packages/dcos-config--setup_$CONFIG_ID\n",
+                "    mkdir -p /opt/mesosphere/packages/dcos-metadata--setup_$CONFIG_ID\n",
+                "    chmod 755 /opt/mesosphere/packages/dcos-config--setup_$CONFIG_ID /opt/mesosphere/packages/dcos-metadata--setup_$CONFIG_ID\n",
+                "    echo \"Downloading Config Package\"\n",
+                "    curl --keepalive-time 2 -fLsSv --retry 20 -Y 100000 -y 60 https://s3.amazonaws.com/asc-devops/packages/dcos-config/dcos-config--setup_${CONFIG_ID}.tar.xz | tar xJv -C /opt/mesosphere/packages/dcos-config--setup_$CONFIG_ID\n",
+                "    echo \"Downloading Metadata Package\"\n",
+                "    curl --keepalive-time 2 -fLsSv --retry 20 -Y 100000 -y 60 https://s3.amazonaws.com/asc-devops/packages/dcos-metadata/dcos-metadata--setup_${CONFIG_ID}.tar.xz | tar xJv -C /opt/mesosphere/packages/dcos-metadata--setup_$CONFIG_ID\n",
+                "  \"path\": |-\n",
+                "    /root/asc.setup\n",
+                "  \"permissions\": |-\n",
+                "    0755\n",
+                "- \"content\": \"\"\n",
+                "  \"path\": |-\n",
+                "    /etc/mesosphere/roles/slave_public\n",
+                "- \"content\": \"\"\n",
+                "  \"path\": |-\n",
+                "    /etc/mesosphere/roles/aws\n"
+              ]
+            ]
+          }
+        }
+      }
+    },
+    "PublicAgentLoadBalancer": {
+      "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
+      "Properties": {
+        "SecurityGroups": [
+          {
+            "Ref": "PublicAgentSecurityGroup"
+          }
+        ],
+        "HealthCheck": {
+          "HealthyThreshold": "2",
+          "Timeout": "2",
+          "Interval": "5",
+          "UnhealthyThreshold": "2",
+          "Target": "HTTP:9090/_haproxy_health_check"
+        },
+        "Subnets": [
+          {
+            "Ref": "PublicSubnet"
+          }
+        ],
+        "Listeners": [
+          {
+            "InstancePort": "80",
+            "LoadBalancerPort": "80",
+            "Protocol": "TCP",
+            "InstanceProtocol": "TCP"
+          },
+          {
+            "InstancePort": "443",
+            "LoadBalancerPort": "443",
+            "Protocol": "TCP",
+            "InstanceProtocol": "TCP"
+          }
+        ]
+      }
+    },
+    "PublicAgentServerGroup": {
+      "Type": "AWS::AutoScaling::AutoScalingGroup",
+      "Properties": {
+        "MinSize": {
+          "Ref": "PublicAgentInstanceCount"
+        },
+        "LaunchConfigurationName": {
+          "Ref": "PublicAgentLaunchConfig"
+        },
+        "Tags": [
+          {
+            "PropagateAtLaunch": "true",
+            "Key": "role",
+            "Value": "mesos-public-agent"
+          }
+        ],
+        "VPCZoneIdentifier": [
+          {
+            "Ref": "PublicSubnet"
+          }
+        ],
+        "LoadBalancerNames": [
+          {
+            "Ref": "PublicAgentLoadBalancer"
+          }
+        ],
+        "DesiredCapacity": {
+          "Ref": "PublicAgentInstanceCount"
+        },
+        "MaxSize": {
+          "Ref": "PublicAgentInstanceCount"
+        }
+      }
+    }
+  },
+  "Parameters": {
+    "PublicAgentInstanceType": {
+      "Default": "m3.xlarge",
+      "Type": "String",
+      "Description": "\nRegion-specific instance type. E.g. m3.xlarge"
+    },
+    "CustomAMI": {
+      "AllowedPattern": "(default|ami-[a-f0-9]{8})",
+      "Default": "default",
+      "Type": "String",
+      "Description": "\nExisting AMI in the deploy region which has all DC/OS pre-requisites installed or 'default'"
+    },
+    "PublicAgentInstanceCount": {
+      "Default": "5",
+      "Type": "Number",
+      "Description": "\nSpecify the number of public agent nodes or accept the default."
+    },
+    "PublicSubnet": {
+      "Description": "\nSubnet ID for use by all public agent nodes",
+      "Type": "String"
+    },
+    "InternalMasterLoadBalancerDnsName": {
+      "Description": "\nDNS Name of Internal Load Balancer. Has to be valid for agents to join a running cluster",
+      "Type": "String"
+    },
+    "PublicAgentSecurityGroup": {
+      "Description": "\nPermissive Security group used by Public Agents",
+      "Type": "String"
+    },
+    "KeyName": {
+      "Description": "\nSpecify your AWS EC2 Key Pair.",
+      "Type": "AWS::EC2::KeyPair::KeyName"
+    },
+    "PublicAgentRole": {
+      "Description": "\nPublic Agent Role",
+      "Type": "String"
+    },
+    "PublicAgentInstanceProfile": {
+      "Description": "\nPublic Agent Instance Profile",
+      "Type": "String"
+    }
+  },
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Outputs": {
+    "PublicAgentDNSName": {
+      "Description": "Public Agent DNS Name",
+      "Value": {
+        "Fn::GetAtt": [
+          "PublicAgentLoadBalancer",
+          "DNSName"
+        ]
+      }
+    }
+  }
+}
